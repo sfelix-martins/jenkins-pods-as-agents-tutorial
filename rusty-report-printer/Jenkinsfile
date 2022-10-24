@@ -11,13 +11,17 @@ pipeline {
             spec:
                 containers:
                 - name: rust
-                  image: rust:1.64-alpine3.16
+                  image: rustlang/rust:nightly-alpine
                   command: ["sleep", "infinity"]
                 - name: node
                   image: node:18.11-alpine3.16
                   command: ["sleep", "infinity"]
             '''
         }
+    }
+
+    environment {
+        CARGO_UNSABLE_SPARSE_REGISTRY = 'true'
     }
 
     options {
