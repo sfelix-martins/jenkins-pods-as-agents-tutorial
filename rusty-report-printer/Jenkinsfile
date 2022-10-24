@@ -21,7 +21,7 @@ pipeline {
     }
 
     environment {
-        CARGO_UNSABLE_SPARSE_REGISTRY = 'true'
+        CARGO_UNSTABLE_SPARSE_REGISTRY = 'true'
     }
 
     options {
