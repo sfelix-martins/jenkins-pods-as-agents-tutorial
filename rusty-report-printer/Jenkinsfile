@@ -16,20 +16,20 @@ pipeline {
                 resources:
                   requests:
                     cpu: 100m
-                    memory: 128Mi
+                    memory: 256Mi
                   limits:
                     cpu: 1
-                    memory: 128Mi
+                    memory: 256Mi
               - name: node
                 image: node:18.11-alpine3.16
                 command: ["sleep", "infinity"]
                 resources:
                   requests:
                     cpu: 100m
-                    memory: 128Mi
+                    memory: 12Mi
                   limits:
                     cpu: 1
-                    memory: 128Mi
+                    memory: 12Mi
             '''
         }
     }
@@ -49,7 +49,11 @@ pipeline {
             steps {
                 dir(PROJECT_DIR) {
                     container('node') {
-                        sh './report_generator.js'
+                        sh '''
+                           pwd
+                           ls -la
+                          ./report_generator.js
+                        '''
                     }
                 }
             }
