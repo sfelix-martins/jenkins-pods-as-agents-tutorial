@@ -6,7 +6,7 @@ import groovy.transform.Field
 pipeline {
     agent {
         kubernetes {
-            inheritFrom 'Node18Alpine'
+            inheritFrom 'Node18Alpine Kaniko'
             defaultContainer 'rust'
             yamlMergeStrategy merge()
             yaml '''
@@ -66,18 +66,21 @@ pipeline {
             }
         }
 
-        // Oh no, we can't perform regular Docker Builds on Kubernetes
-        /*
         stage('Build Image') {
             environment {
                 DOCKER_BUILDKIT = "1"
             }
             steps {
                 dir(PROJECT_DIR) {
-                    sh 'docker build -t super-report-printer:v0.1.0 .'
+                    container('kaniko') {
+                      sh '''/kaniko/executor --context=. \\
+                        --dockerfile=./Dockerfile \\
+                        --destination=rusty-report-printer:v0.1.0 \\
+                        --no-push
+                      '''
+                    }
                 }
             }
         }
-         */
     }
 }
