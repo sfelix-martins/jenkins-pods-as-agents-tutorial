@@ -2,7 +2,6 @@ import groovy.transform.Field
 
 library 'jenkins-tutorial-shared-lib'
 
-
 // We need this because of the mono repo :(
 @Field String PROJECT_DIR = 'super-report-printer'
 
