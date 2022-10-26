@@ -75,7 +75,7 @@ pipeline {
                     container('kaniko') {
                       sh '''/kaniko/executor --context=. \\
                         --dockerfile=./Dockerfile \\
-                        --destination=rusty-report-printer:v0.1.0 \\
+                        ${getKanikoDestinations()} \\
                         --no-push
                       '''
                     }
@@ -83,4 +83,13 @@ pipeline {
             }
         }
     }
+}
+
+def getKanikoDestinations() {
+    def commitTag = "${env.GIT_BRANCH.replace('/', '-')}-${env.GIT_COMMIT}"
+    def tags = [commitTag]
+    if (env.GIT_BRANCH == 'master') {
+        tags += 'latest'
+    }
+    return tags.collect { tag -> "--destination=rusty-report-printer:${tag}" }.join(' ')
 }
