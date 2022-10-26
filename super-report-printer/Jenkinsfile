@@ -1,5 +1,8 @@
 import groovy.transform.Field
 
+library 'jenkins-tutorial-shared-lib'
+
+
 // We need this because of the mono repo :(
 @Field String PROJECT_DIR = 'super-report-printer'
 
@@ -7,7 +10,7 @@ pipeline {
     // We should really use some specific agent, we are getting crashes on some agents without Node or Docker!
     agent {
         kubernetes {
-            inheritFrom 'Node16Alpine'
+            inheritFrom 'Node16Alpine Kaniko'
             defaultContainer 'node16'
             yamlMergeStrategy merge()
             yaml '''
@@ -23,16 +26,6 @@ pipeline {
                     limits:
                       cpu: 1
                       memory: 12Mi
-                - name: kaniko
-                  image: gcr.io/kaniko-project/executor:v1.8.1-debug
-                  command: ["sleep", "infinity"]
-                  resources:
-                    requests:
-                      cpu: 100m
-                      memory: 256Mi
-                    limits:
-                      cpu: 2
-                      memory: 256Mi
             '''
         }
     }
@@ -75,16 +68,25 @@ pipeline {
                 DOCKER_BUILDKIT = "1"
             }
             steps {
-                dir(PROJECT_DIR) {
-                    container('kaniko') {
-                      sh '''/kaniko/executor --context=. \\
-                        --dockerfile=./Dockerfile \\
-                        --destination=super-report-printer:v0.1.0 \\
-                        --no-push
-                      '''
-                    }
+                script {
+                    kaniko.buildNoPush(
+                        imageName: 'super-report-printer',
+                        imageTag: getImageTags(),
+                        context: PROJECT_DIR,
+                        container: 'kaniko',
+                        dockerfile: "./Dockerfile",
+                        extraArgs: '--use-new-run --snapshotMode=redo'
+                    )
                 }
             }
         }
     }
+}
+
+def getImageTags() {
+    def tags = [sanitizeImageTag("${env.GIT_BRANCH}-${env.GIT_COMMIT}")]
+    if (isMaster()) {
+        tags += 'latest'
+    }
+    return tags
 }
